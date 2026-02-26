@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark" data-lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبات التاريخ</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"]{--bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--border:#1e2d45;--text:#e2e8f0;--muted:#64748b;--glow:rgba(59,130,246,0.06)}
+[data-theme="light"]{--bg:#f0f4ff;--surface:#ffffff;--surface2:#f1f5fb;--border:#dde4f0;--text:#1e2a3a;--muted:#8496b0;--glow:rgba(59,130,246,0.03)}
+:root{--accent:#3b82f6;--accent2:#06b6d4;--success:#10b981;--gold:#f59e0b;--gradient:linear-gradient(135deg,#3b82f6,#8b5cf6)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+[data-lang="en"] *{font-family:'Outfit',sans-serif !important}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(59,130,246,.07) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,92,246,.07) 0%,transparent 60%)}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(59,130,246,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.04) 1px,transparent 1px);background-size:40px 40px}
+.container{max-width:1100px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+
+/* TOPBAR */
+.topbar{display:flex;justify-content:flex-end;gap:10px;padding:18px 0 0}
+.ctrl-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:50px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;user-select:none}
+.ctrl-btn:hover{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.theme-track{width:34px;height:19px;background:var(--surface2);border-radius:10px;position:relative;border:1.5px solid var(--border);transition:all .3s;flex-shrink:0}
+[data-theme="light"] .theme-track{background:var(--accent);border-color:var(--accent)}
+.theme-thumb{width:13px;height:13px;border-radius:50%;background:var(--muted);position:absolute;top:2px;left:2px;transition:all .3s}
+[data-theme="light"] .theme-thumb{left:17px;background:#fff}
+
+/* HEADER */
+header{padding:28px 0 22px;text-align:center}
+.header-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:50px;padding:6px 18px;font-size:13px;color:var(--accent2);margin-bottom:14px}
+h1{font-family:'Cairo',sans-serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:900;background:linear-gradient(135deg,var(--text) 0%,#94a3b8 50%,#3b82f6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:10px}
+[data-lang="en"] h1{font-family:'Outfit',sans-serif !important}
+.subtitle{color:var(--muted);font-size:.95rem;margin-bottom:28px}
+.today-display{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:11px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.today-label{color:var(--success);font-size:13px;font-weight:700}
+.today-date{font-family:'Cairo',sans-serif;font-size:14px;font-weight:700}
+
+/* NAV */
+.nav-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:7px;margin-bottom:26px;display:flex;flex-wrap:wrap;gap:4px;transition:background .3s,border-color .3s}
+.tab-btn{flex:1;min-width:100px;padding:9px 10px;background:transparent;border:none;border-radius:10px;color:var(--muted);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .22s;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px}
+.tab-btn:hover{color:var(--text);background:var(--surface2)}
+.tab-btn.active{background:var(--gradient);color:#fff;font-weight:700}
+
+/* PANELS */
+.calc-panel{display:none;animation:fadeIn .3s ease}
+.calc-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px 28px;margin-bottom:20px;position:relative;overflow:hidden;transition:background .3s,border-color .3s}
+.card::before{content:'';position:absolute;top:0;right:0;width:200px;height:200px;background:radial-gradient(circle,var(--glow) 0%,transparent 70%);pointer-events:none}
+.card-title{font-family:'Cairo',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--text)}
+[data-lang="en"] .card-title{font-family:'Outfit',sans-serif !important;font-size:1.1rem}
+.card-title .icon{width:37px;height:37px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px;background:var(--gradient)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:13px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:7px}
+label{font-size:12px;font-weight:600;color:var(--muted)}
+
+/* CUSTOM DATE INPUT */
+.date-input-wrap{display:flex;gap:6px;align-items:center}
+.date-part{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;
+  padding:11px 10px;color:var(--text);font-family:inherit;font-size:14px;
+  transition:border-color .2s,box-shadow .2s,background .3s;
+  width:100%;text-align:center;outline:none;
+  -moz-appearance:textfield;appearance:textfield;
+}
+.date-part::-webkit-inner-spin-button,.date-part::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.date-part:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.date-part::placeholder{color:var(--muted);font-size:13px}
+.date-sep{color:var(--muted);font-weight:700;font-size:16px;flex-shrink:0}
+
+/* regular select */
+select{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:14px;transition:border-color .2s,box-shadow .2s,background .3s;width:100%;outline:none}
+select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+select option{background:var(--surface)}
+input[type=number]{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:inherit;font-size:14px;transition:border-color .2s,box-shadow .2s,background .3s;width:100%;outline:none;-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+
+.btn{background:var(--gradient);border:none;border-radius:12px;padding:12px 28px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;width:100%;margin-top:2px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(59,130,246,.4)}
+.btn:active{transform:translateY(0)}
+
+/* RESULT */
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:16px;display:none;animation:slideUp .3s ease;transition:background .3s,border-color .3s}
+.result-box.show{display:block}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.result-main{font-family:'Cairo',sans-serif;font-size:1.5rem;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;line-height:1.45}
+[data-lang="en"] .result-main{font-family:'Outfit',sans-serif !important;font-size:1.3rem}
+.result-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:9px;margin-top:13px}
+.result-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px;text-align:center;transition:background .3s,border-color .3s}
+.result-item .val{font-size:1.25rem;font-weight:900;font-family:'Cairo',sans-serif;color:var(--accent2);display:block}
+.result-item .lbl{font-size:11px;color:var(--muted);margin-top:3px;display:block}
+.highlight-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(59,130,246,.06);border-radius:8px;margin-top:7px;font-size:13px}
+[data-theme="light"] .highlight-row{background:rgba(59,130,246,.04)}
+.highlight-row .key{color:var(--muted)}
+.highlight-row .val{color:var(--text);font-weight:600}
+.progress-wrap{margin-top:13px}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
+.progress-bar{height:9px;background:var(--surface);border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;border-radius:10px;background:var(--gradient);transition:width .6s ease}
+.info-note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--gold);margin-top:13px;display:flex;gap:7px}
+.err-msg{color:#ef4444;font-size:12px;margin-top:6px;display:none}
+
+@media(max-width:640px){
+  .card{padding:16px}
+  .tab-btn{min-width:80px;font-size:11px;padding:7px 6px}
+  .result-main{font-size:1.2rem}
+  h1{font-size:1.6rem}
+  .ctrl-btn .lbl{display:none}
+  .date-input-wrap{gap:4px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <button class="ctrl-btn" onclick="toggleLang()">
+      <span>🌐</span><span class="lbl" id="langLbl">English</span>
+    </button>
+    <button class="ctrl-btn" onclick="toggleTheme()">
+      <span id="themeIco">☀️</span><span class="lbl" id="themeLbl">فاتح</span>
+      <div class="theme-track"><div class="theme-thumb"></div></div>
+    </button>
+  </div>
+
+  <header>
+    <div class="header-badge">📅 <span id="badgeTxt">أدوات التاريخ والوقت</span></div>
+    <h1 id="mainTitle">حاسبات التاريخ الشاملة</h1>
+    <p class="subtitle" id="mainSub">١١ أداة متكاملة للتاريخ والوقت في مكان واحد</p>
+  </header>
+
+  <div class="today-display">
+    <span class="today-label" id="todayLbl">📅 تاريخ اليوم</span>
+    <span class="today-date" id="todayBar">—</span>
+  </div>
+
+  <div class="nav-wrapper">
+    <button class="tab-btn active" onclick="showTab('age',this)">🎂 <span id="tn0">العمر</span></button>
+    <button class="tab-btn" onclick="showTab('diff2',this)">👥 <span id="tn1">فرق العمر</span></button>
+    <button class="tab-btn" onclick="showTab('diffdate',this)">📆 <span id="tn2">بين تاريخين</span></button>
+    <button class="tab-btn" onclick="showTab('daysbetween',this)">🗓 <span id="tn3">عدد الأيام</span></button>
+    <button class="tab-btn" onclick="showTab('nextmonths',this)">🔜 <span id="tn4">الأشهر القادمة</span></button>
+    <button class="tab-btn" onclick="showTab('nextyears',this)">📌 <span id="tn5">السنوات القادمة</span></button>
+    <button class="tab-btn" onclick="showTab('eoy',this)">🏁 <span id="tn6">نهاية السنة</span></button>
+    <button class="tab-btn" onclick="showTab('weeknum',this)">📊 <span id="tn7">أسبوع السنة</span></button>
+    <button class="tab-btn" onclick="showTab('dayofweek',this)">📋 <span id="tn8">يوم التاريخ</span></button>
+    <button class="tab-btn" onclick="showTab('hijri',this)">🌙 <span id="tn9">هجري↔ميلادي</span></button>
+    <button class="tab-btn" onclick="showTab('retire',this)">🏖 <span id="tn10">التقاعد</span></button>
+  </div>
+
+  <!-- helper: date-input component rendered by JS -->
+
+  <!-- 1. AGE -->
+  <div class="calc-panel active" id="tab-age">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🎂</span><span id="ct0">حاسبة العمر</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_ageBirth">تاريخ الميلاد</label><div id="di_ageBirth"></div></div>
+        <div class="form-group"><label id="l_ageUntil">احسب حتى تاريخ</label><div id="di_ageUntil"></div></div>
+      </div>
+      <button class="btn" onclick="calcAge()"><span id="btn_age">احسب العمر</span></button>
+      <div class="result-box" id="ageResult"></div>
+    </div>
+  </div>
+
+  <!-- 2. AGE DIFF -->
+  <div class="calc-panel" id="tab-diff2">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">👥</span><span id="ct1">فرق العمر بين شخصين</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_p1">تاريخ ميلاد الشخص الأول</label><div id="di_p1"></div></div>
+        <div class="form-group"><label id="l_p2">تاريخ ميلاد الشخص الثاني</label><div id="di_p2"></div></div>
+      </div>
+      <button class="btn" onclick="calcAgeDiff()"><span id="btn_diff2">احسب الفرق</span></button>
+      <div class="result-box" id="ageDiffResult"></div>
+    </div>
+  </div>
+
+  <!-- 3. DATE DIFF -->
+  <div class="calc-panel" id="tab-diffdate">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">📆</span><span id="ct2">الفرق بين تاريخين</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_d1">التاريخ الأول</label><div id="di_d1"></div></div>
+        <div class="form-group"><label id="l_d2">التاريخ الثاني</label><div id="di_d2"></div></div>
+      </div>
+      <button class="btn" onclick="calcDateDiff()"><span id="btn_diffdate">احسب الفرق</span></button>
+      <div class="result-box" id="dateDiffResult"></div>
+    </div>
+  </div>
+
+  <!-- 4. DAYS BETWEEN -->
+  <div class="calc-panel" id="tab-daysbetween">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🗓</span><span id="ct3">الأيام بين تاريخين</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_dfrom">من تاريخ</label><div id="di_dfrom"></div></div>
+        <div class="form-group"><label id="l_dto">إلى تاريخ</label><div id="di_dto"></div></div>
+      </div>
+      <button class="btn" onclick="calcDaysBetween()"><span id="btn_days">احسب الأيام</span></button>
+      <div class="result-box" id="daysBetweenResult"></div>
+    </div>
+  </div>
+
+  <!-- 5. NEXT MONTHS -->
+  <div class="calc-panel" id="tab-nextmonths">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🔜</span><span id="ct4">الأشهر القادمة</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_nmFrom">من تاريخ</label><div id="di_nmFrom"></div></div>
+        <div class="form-group"><label id="l_nmCount">عدد الأشهر</label><input type="number" id="nmCount" min="1" max="120" value="6"></div>
+      </div>
+      <button class="btn" onclick="calcNextMonths()"><span id="btn_nm">احسب</span></button>
+      <div class="result-box" id="nextMonthsResult"></div>
+    </div>
+  </div>
+
+  <!-- 6. NEXT YEARS -->
+  <div class="calc-panel" id="tab-nextyears">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">📌</span><span id="ct5">السنوات القادمة</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_nyFrom">من تاريخ</label><div id="di_nyFrom"></div></div>
+        <div class="form-group"><label id="l_nyCount">عدد السنوات</label><input type="number" id="nyCount" min="1" max="100" value="5"></div>
+      </div>
+      <button class="btn" onclick="calcNextYears()"><span id="btn_ny">احسب</span></button>
+      <div class="result-box" id="nextYearsResult"></div>
+    </div>
+  </div>
+
+  <!-- 7. EOY -->
+  <div class="calc-panel" id="tab-eoy">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🏁</span><span id="ct6">الأيام المتبقية لنهاية السنة</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_eoyDate">من تاريخ (اختياري)</label><div id="di_eoyDate"></div></div>
+        <div class="form-group"><label id="l_eoyYear">السنة</label><input type="number" id="eoyYear" min="2000" max="2100"></div>
+      </div>
+      <button class="btn" onclick="calcEOY()"><span id="btn_eoy">احسب الأيام المتبقية</span></button>
+      <div class="result-box" id="eoyResult"></div>
+    </div>
+  </div>
+
+  <!-- 8. WEEK NUM -->
+  <div class="calc-panel" id="tab-weeknum">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">📊</span><span id="ct7">رقم الأسبوع من السنة</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_weekDate">التاريخ</label><div id="di_weekDate"></div></div>
+      </div>
+      <button class="btn" onclick="calcWeekNum()"><span id="btn_week">احسب رقم الأسبوع</span></button>
+      <div class="result-box" id="weekNumResult"></div>
+    </div>
+  </div>
+
+  <!-- 9. DOW -->
+  <div class="calc-panel" id="tab-dayofweek">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">📋</span><span id="ct8">اليوم من التاريخ</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_dowDate">التاريخ</label><div id="di_dowDate"></div></div>
+      </div>
+      <button class="btn" onclick="calcDayOfWeek()"><span id="btn_dow">احسب اليوم</span></button>
+      <div class="result-box" id="dowResult"></div>
+    </div>
+  </div>
+
+  <!-- 10. HIJRI -->
+  <div class="calc-panel" id="tab-hijri">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🌙</span><span id="ct9">تحويل التاريخ هجري ↔ ميلادي</span></h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label id="l_hijriType">نوع التحويل</label>
+          <select id="hijriType" onchange="toggleHijriForm()">
+            <option value="gToH" id="hOpt1">ميلادي ← هجري</option>
+            <option value="hToG" id="hOpt2">هجري ← ميلادي</option>
+          </select>
+        </div>
+        <div class="form-group" id="gregInputWrap">
+          <label id="l_gregDate">التاريخ الميلادي</label>
+          <div id="di_hijriGreg"></div>
+        </div>
+        <div class="form-group" id="hYearWrap" style="display:none">
+          <label id="l_hYear">السنة الهجرية</label>
+          <input type="number" id="hijriYear" min="1" max="1600" placeholder="1446">
+        </div>
+        <div class="form-group" id="hMonthWrap" style="display:none">
+          <label id="l_hMonth">الشهر الهجري</label>
+          <select id="hijriMonth">
+            <option value="1">محرم</option><option value="2">صفر</option>
+            <option value="3">ربيع الأول</option><option value="4">ربيع الثاني</option>
+            <option value="5">جمادى الأولى</option><option value="6">جمادى الآخرة</option>
+            <option value="7">رجب</option><option value="8">شعبان</option>
+            <option value="9">رمضان</option><option value="10">شوال</option>
+            <option value="11">ذو القعدة</option><option value="12">ذو الحجة</option>
+          </select>
+        </div>
+        <div class="form-group" id="hDayWrap" style="display:none">
+          <label id="l_hDay">اليوم الهجري</label>
+          <input type="number" id="hijriDay" min="1" max="30" placeholder="15">
+        </div>
+      </div>
+      <button class="btn" onclick="calcHijri()"><span id="btn_hijri">تحويل التاريخ</span></button>
+      <div class="info-note">ℹ️ <span id="hijriNote">التحويل تقريبي وقد يختلف يوماً بحسب رؤية الهلال</span></div>
+      <div class="result-box" id="hijriResult"></div>
+    </div>
+  </div>
+
+  <!-- 11. RETIREMENT -->
+  <div class="calc-panel" id="tab-retire">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🏖</span><span id="ct10">حاسبة التقاعد</span></h2>
+      <div class="form-grid">
+        <div class="form-group"><label id="l_rBirth">تاريخ الميلاد</label><div id="di_rBirth"></div></div>
+        <div class="form-group"><label id="l_rStart">تاريخ بدء العمل</label><div id="di_rStart"></div></div>
+        <div class="form-group"><label id="l_rAge">سن التقاعد</label><input type="number" id="retireAge" min="40" max="80" value="60"></div>
+        <div class="form-group"><label id="l_rMin">الحد الأدنى لسنوات الخدمة</label><input type="number" id="retireMinYears" min="1" max="40" value="25"></div>
+      </div>
+      <button class="btn" onclick="calcRetirement()"><span id="btn_retire">احسب موعد التقاعد</span></button>
+      <div class="result-box" id="retireResult"></div>
+    </div>
+  </div>
+
+  <div style="height:60px"></div>
+</div>
+
+<script>
+// ===========================
+// TRANSLATIONS
+// ===========================
+const TX = {
+  ar:{
+    badge:'أدوات التاريخ والوقت',title:'حاسبات التاريخ الشاملة',sub:'١١ أداة متكاملة للتاريخ والوقت في مكان واحد',
+    todayLbl:'📅 تاريخ اليوم',langSwitch:'English',themeL:'فاتح',themeD:'داكن',
+    tabs:['العمر','فرق العمر','بين تاريخين','عدد الأيام','الأشهر القادمة','السنوات القادمة','نهاية السنة','أسبوع السنة','يوم التاريخ','هجري↔ميلادي','التقاعد'],
+    ctitles:['حاسبة العمر','فرق العمر بين شخصين','الفرق بين تاريخين','الأيام بين تاريخين','الأشهر القادمة','السنوات القادمة','الأيام المتبقية لنهاية السنة','رقم الأسبوع من السنة','اليوم من التاريخ','تحويل التاريخ هجري ↔ ميلادي','حاسبة التقاعد'],
+    labels:{ageBirth:'تاريخ الميلاد',ageUntil:'احسب حتى تاريخ',p1:'تاريخ ميلاد الشخص الأول',p2:'تاريخ ميلاد الشخص الثاني',d1:'التاريخ الأول',d2:'التاريخ الثاني',dfrom:'من تاريخ',dto:'إلى تاريخ',nmFrom:'من تاريخ',nmCount:'عدد الأشهر',nyFrom:'من تاريخ',nyCount:'عدد السنوات',eoyDate:'من تاريخ (اختياري)',eoyYear:'السنة',weekDate:'التاريخ',dowDate:'التاريخ',hijriType:'نوع التحويل',gregDate:'التاريخ الميلادي',hYear:'السنة الهجرية',hMonth:'الشهر الهجري',hDay:'اليوم الهجري',rBirth:'تاريخ الميلاد',rStart:'تاريخ بدء العمل',rAge:'سن التقاعد',rMin:'الحد الأدنى لسنوات الخدمة'},
+    btns:{age:'احسب العمر',diff2:'احسب الفرق',diffdate:'احسب الفرق',days:'احسب الأيام',nm:'احسب',ny:'احسب',eoy:'احسب الأيام المتبقية',week:'احسب رقم الأسبوع',dow:'احسب اليوم',hijri:'تحويل التاريخ',retire:'احسب موعد التقاعد'},
+    hOpts:['ميلادي ← هجري','هجري ← ميلادي'],
+    hijriNote:'التحويل تقريبي وقد يختلف يوماً بحسب رؤية الهلال',
+    dayPH:'يوم',monPH:'شهر',yearPH:'سنة',
+    days:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],
+    months:['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    hMonths:['محرم','صفر','ربيع الأول','ربيع الثاني','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'],
+    yr:'سنة',mo:'شهر',dy:'يوم',
+    Years:'سنة',TotalMonths:'إجمالي الأشهر',Weeks:'أسبوع',Days:'يوم',Hours:'ساعة',
+    YearsS:'سنوات',ExtraMonths:'أشهر إضافية',ExtraDays:'أيام إضافية',TotalDays:'إجمالي الأيام',
+    Older:'الأكبر سناً',Younger:'الأصغر سناً',
+    FullWeeks:'أسبوع كامل',Remaining:'أيام متبقية',Workdays:'أيام عمل',Weekends:'عطل',
+    After:'بعد',MonthS:'شهر',YearSS:'سنة',FromDate:'من تاريخ:',
+    DaysLeft:'يوم متبقٍ',WeeksLeft:'أسبوع متبقٍ',DaysElapsed:'يوم مضى',YearDays:'أيام السنة',
+    Elapsed:'مرّ من',EndOf:'نهاية سنة',
+    WeekNum:'الأسبوع رقم',DayOfYear:'اليوم من السنة',WeeksLeftS:'أسابيع متبقية',
+    DayName:'اسم اليوم',DayL:'اليوم',MonthL:'الشهر',YearL:'السنة',DayType:'نوع اليوم',
+    Weekend:'🎉 عطلة نهاية أسبوع',Workday:'💼 يوم عمل',
+    Greg:'الميلادي',Hijri:'الهجري',HijriYear:'السنة الهجرية',AH:'هـ',
+    CurrAge:'العمر الحالي',ServiceYrs:'سنوات الخدمة',ByAge:'التقاعد ببلوغ سن',
+    AfterService:'التقاعد بعد',ServiceYrsS:'سنة خدمة',ActualRetire:'موعد التقاعد الفعلي',
+    EligibleNow:'✅ مؤهل للتقاعد الآن!',RetireDate:'موعد التقاعد:',
+    YrsLeft:'سنة متبقية',MosLeft:'أشهر',DysLeft:'أيام',DiffLabel:'الفرق:',
+  },
+  en:{
+    badge:'Date & Time Tools',title:'Comprehensive Date Calculators',sub:'11 integrated date & time tools in one place',
+    todayLbl:"📅 Today's Date",langSwitch:'العربية',themeL:'Light',themeD:'Dark',
+    tabs:['Age','Age Gap','Date Diff','Days Count','Next Months','Next Years','Year End','Week No.','Day of Date','Hijri↔Greg','Retirement'],
+    ctitles:['Age Calculator','Age Gap Between Two People','Difference Between Two Dates','Days Between Two Dates','Next Months','Next Years','Days Remaining Until Year End','Week Number of the Year','Day of the Week','Hijri ↔ Gregorian Conversion','Retirement Calculator'],
+    labels:{ageBirth:'Date of Birth',ageUntil:'Calculate Until',p1:'Person 1 Birth Date',p2:'Person 2 Birth Date',d1:'First Date',d2:'Second Date',dfrom:'From Date',dto:'To Date',nmFrom:'From Date',nmCount:'Number of Months',nyFrom:'From Date',nyCount:'Number of Years',eoyDate:'From Date (optional)',eoyYear:'Year',weekDate:'Date',dowDate:'Date',hijriType:'Conversion Type',gregDate:'Gregorian Date',hYear:'Hijri Year',hMonth:'Hijri Month',hDay:'Hijri Day',rBirth:'Date of Birth',rStart:'Employment Start',rAge:'Retirement Age',rMin:'Min. Service Years'},
+    btns:{age:'Calculate Age',diff2:'Calculate Difference',diffdate:'Calculate Difference',days:'Count Days',nm:'Calculate',ny:'Calculate',eoy:'Calculate Remaining Days',week:'Get Week Number',dow:'Get Day',hijri:'Convert Date',retire:'Calculate Retirement'},
+    hOpts:['Gregorian → Hijri','Hijri → Gregorian'],
+    hijriNote:'Conversion is approximate and may differ by one day based on moon sighting',
+    dayPH:'DD',monPH:'MM',yearPH:'YYYY',
+    days:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    hMonths:["Muharram","Safar","Rabi' al-Awwal","Rabi' al-Thani","Jumada I","Jumada II","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"],
+    yr:'yr',mo:'mo',dy:'d',
+    Years:'Years',TotalMonths:'Total Months',Weeks:'Weeks',Days:'Days',Hours:'Hours',
+    YearsS:'Years',ExtraMonths:'Extra Months',ExtraDays:'Extra Days',TotalDays:'Total Days',
+    Older:'Older',Younger:'Younger',
+    FullWeeks:'Full Weeks',Remaining:'Remaining Days',Workdays:'Workdays',Weekends:'Weekends',
+    After:'After',MonthS:'month(s)',YearSS:'year(s)',FromDate:'From:',
+    DaysLeft:'Days Remaining',WeeksLeft:'Weeks Left',DaysElapsed:'Days Elapsed',YearDays:'Year Days',
+    Elapsed:'Elapsed in',EndOf:'End of',
+    WeekNum:'Week Number',DayOfYear:'Day of Year',WeeksLeftS:'Weeks Left',
+    DayName:'Day Name',DayL:'Day',MonthL:'Month',YearL:'Year',DayType:'Day Type',
+    Weekend:'🎉 Weekend',Workday:'💼 Workday',
+    Greg:'Gregorian',Hijri:'Hijri',HijriYear:'Hijri Year',AH:'AH',
+    CurrAge:'Current Age',ServiceYrs:'Service Years',ByAge:'By Age',
+    AfterService:'After',ServiceYrsS:'Service Yrs',ActualRetire:'Actual Retirement',
+    EligibleNow:'✅ Eligible for Retirement Now!',RetireDate:'Retirement Date:',
+    YrsLeft:'Years Left',MosLeft:'Months',DysLeft:'Days',DiffLabel:'Difference:',
+  }
+};
+
+function L(){ return TX[document.documentElement.getAttribute('data-lang')||'ar']; }
+function isEn(){ return (document.documentElement.getAttribute('data-lang')||'ar')==='en'; }
+function fN(n){ return n.toLocaleString(isEn()?'en-US':'ar-SA'); }
+
+// ===========================
+// CUSTOM DATE INPUT
+// IDs stored in dateInputs map: key -> {d,m,y} input elements
+// ===========================
+const DATE_INPUTS = {}; // key -> container id
+const DATE_IDS = [
+  'ageBirth','ageUntil','p1','p2','d1','d2',
+  'dfrom','dto','nmFrom','nyFrom','eoyDate',
+  'weekDate','dowDate','hijriGreg','rBirth','rStart'
+];
+
+function buildDateInput(containerId){
+  const wrap = document.getElementById('di_'+containerId);
+  if(!wrap) return;
+  const s = L();
+  const isE = isEn();
+  wrap.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'date-input-wrap';
+  div.id = 'diw_'+containerId;
+
+  // day / month / year fields
+  const dInput = document.createElement('input');
+  dInput.type = 'number'; dInput.className = 'date-part';
+  dInput.placeholder = s.dayPH; dInput.min=1; dInput.max=31;
+  dInput.id = 'dp_d_'+containerId;
+  dInput.style.width = '60px';
+
+  const sep1 = document.createElement('span');
+  sep1.className = 'date-sep'; sep1.textContent='/';
+
+  const mInput = document.createElement('input');
+  mInput.type = 'number'; mInput.className = 'date-part';
+  mInput.placeholder = s.monPH; mInput.min=1; mInput.max=12;
+  mInput.id = 'dp_m_'+containerId;
+  mInput.style.width = '60px';
+
+  const sep2 = document.createElement('span');
+  sep2.className = 'date-sep'; sep2.textContent='/';
+
+  const yInput = document.createElement('input');
+  yInput.type = 'number'; yInput.className = 'date-part';
+  yInput.placeholder = s.yearPH; yInput.min=1900; yInput.max=2200;
+  yInput.id = 'dp_y_'+containerId;
+  yInput.style.flex='1'; yInput.style.minWidth='80px';
+
+  // order: day/month/year for both (universal)
+  div.appendChild(dInput);
+  div.appendChild(sep1);
+  div.appendChild(mInput);
+  div.appendChild(sep2);
+  div.appendChild(yInput);
+  wrap.appendChild(div);
+}
+
+function buildAllDateInputs(){
+  DATE_IDS.forEach(id => buildDateInput(id));
+}
+
+function getDate(key){
+  const d = parseInt(document.getElementById('dp_d_'+key)?.value);
+  const m = parseInt(document.getElementById('dp_m_'+key)?.value);
+  const y = parseInt(document.getElementById('dp_y_'+key)?.value);
+  if(!d||!m||!y||d<1||d>31||m<1||m>12||y<1900) return null;
+  const date = new Date(y,m-1,d);
+  if(date.getFullYear()!==y||date.getMonth()!==m-1||date.getDate()!==d) return null;
+  return date;
+}
+
+function setDateToday(key){
+  const t=new Date();
+  const dEl=document.getElementById('dp_d_'+key);
+  const mEl=document.getElementById('dp_m_'+key);
+  const yEl=document.getElementById('dp_y_'+key);
+  if(dEl){dEl.value=t.getDate();}
+  if(mEl){mEl.value=t.getMonth()+1;}
+  if(yEl){yEl.value=t.getFullYear();}
+}
+
+function formatDate(d){
+  if(!d) return '';
+  const s=L();
+  return `${s.days[d.getDay()]}، ${d.getDate()} ${s.months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function updateTodayBar(){
+  document.getElementById('todayBar').textContent = formatDate(new Date());
+}
+
+// ===========================
+// THEME & LANG
+// ===========================
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  document.getElementById('themeIco').textContent=dark?'🌙':'☀️';
+  document.getElementById('themeLbl').textContent=dark?L().themeD:L().themeL;
+}
+
+function toggleLang(){
+  const html=document.documentElement;
+  const ar=(html.getAttribute('data-lang')||'ar')==='ar';
+  const nl=ar?'en':'ar';
+  html.setAttribute('data-lang',nl);
+  html.setAttribute('lang',nl);
+  html.setAttribute('dir',ar?'ltr':'rtl');
+  // Rebuild all date inputs with new placeholders
+  buildAllDateInputs();
+  applyTranslations();
+}
+
+function applyTranslations(){
+  const s=L();
+  document.getElementById('badgeTxt').textContent=s.badge;
+  document.getElementById('mainTitle').textContent=s.title;
+  document.getElementById('mainSub').textContent=s.sub;
+  document.getElementById('todayLbl').textContent=s.todayLbl;
+  document.getElementById('langLbl').textContent=s.langSwitch;
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  document.getElementById('themeLbl').textContent=dark?s.themeL:s.themeD;
+  for(let i=0;i<11;i++){const e=document.getElementById('tn'+i);if(e)e.textContent=s.tabs[i];}
+  for(let i=0;i<11;i++){const e=document.getElementById('ct'+i);if(e)e.textContent=s.ctitles[i];}
+  Object.keys(s.labels).forEach(k=>{const e=document.getElementById('l_'+k);if(e)e.textContent=s.labels[k];});
+  Object.keys(s.btns).forEach(k=>{const e=document.getElementById('btn_'+k);if(e)e.textContent=s.btns[k];});
+  document.getElementById('hOpt1').textContent=s.hOpts[0];
+  document.getElementById('hOpt2').textContent=s.hOpts[1];
+  document.getElementById('hijriNote').textContent=s.hijriNote;
+  updateTodayBar();
+}
+
+function showTab(tab,btn){
+  document.querySelectorAll('.calc-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showResult(id,html){
+  const b=document.getElementById(id);
+  b.innerHTML=html; b.classList.add('show');
+}
+
+function getDateDiff(d1,d2){
+  const totalDays=Math.round((d2-d1)/86400000);
+  let y1=d1.getFullYear(),m1=d1.getMonth(),_=d1.getDate();
+  let y2=d2.getFullYear(),m2=d2.getMonth(),day2=d2.getDate();
+  let years=y2-y1,months=m2-m1,days=day2-d1.getDate();
+  if(days<0){months--;const pm=new Date(y2,m2,0);days+=pm.getDate();}
+  if(months<0){years--;months+=12;}
+  return {years,months,days,totalDays};
+}
+
+window.onload=function(){
+  buildAllDateInputs();
+  // set today defaults
+  ['ageUntil','d2','dto','nmFrom','nyFrom','eoyDate','weekDate','dowDate'].forEach(k=>setDateToday(k));
+  document.getElementById('eoyYear').value=new Date().getFullYear();
+  updateTodayBar();
+};
+
+function toggleHijriForm(){
+  const h=document.getElementById('hijriType').value==='hToG';
+  document.getElementById('gregInputWrap').style.display=h?'none':'flex';
+  document.getElementById('hYearWrap').style.display=h?'flex':'none';
+  document.getElementById('hMonthWrap').style.display=h?'flex':'none';
+  document.getElementById('hDayWrap').style.display=h?'flex':'none';
+}
+
+// ===========================
+// CALCULATORS
+// ===========================
+function calcAge(){
+  const d1=getDate('ageBirth'),d2=getDate('ageUntil');
+  if(!d1||!d2||d2<d1)return;
+  const s=L();
+  const {years,months,days,totalDays}=getDateDiff(d1,d2);
+  showResult('ageResult',`
+    <div class="result-main">${fN(years)} ${s.yr} ${fN(months)} ${s.mo} ${fN(days)} ${s.dy}</div>
+    <div class="result-details">
+      <div class="result-item"><span class="val">${fN(years)}</span><span class="lbl">${s.Years}</span></div>
+      <div class="result-item"><span class="val">${fN(years*12+months)}</span><span class="lbl">${s.TotalMonths}</span></div>
+      <div class="result-item"><span class="val">${fN(Math.floor(totalDays/7))}</span><span class="lbl">${s.Weeks}</span></div>
+      <div class="result-item"><span class="val">${fN(totalDays)}</span><span class="lbl">${s.Days}</span></div>
+      <div class="result-item"><span class="val">${fN(totalDays*24)}</span><span class="lbl">${s.Hours}</span></div>
+    </div>`);
+}
+
+function calcAgeDiff(){
+  const a=getDate('p1'),b=getDate('p2');
+  if(!a||!b)return;
+  const older=a<b?a:b,younger=a<b?b:a;
+  const {years,months,days,totalDays}=getDateDiff(older,younger);
+  const s=L();
+  showResult('ageDiffResult',`
+    <div class="result-main">${s.DiffLabel} ${fN(years)} ${s.yr} ${fN(months)} ${s.mo} ${fN(days)} ${s.dy}</div>
+    <div class="result-details">
+      <div class="result-item"><span class="val">${fN(years)}</span><span class="lbl">${s.YearsS}</span></div>
+      <div class="result-item"><span class="val">${fN(months)}</span><span class="lbl">${s.ExtraMonths}</span></div>
+      <div class="result-item"><span class="val">${fN(days)}</span><span class="lbl">${s.ExtraDays}</span></div>
+      <div class="result-item"><span class="val">${fN(totalDays)}</span><span class="lbl">${s.TotalDays}</span></div>
+    </div>
+    <div class="highlight-row"><span class="key">${s.Older}</span><span class="val">${formatDate(older)}</span></div>
+    <div class="highlight-row"><span class="key">${s.Younger}</span><span class="val">${formatDate(younger)}</span></div>`);
+}
+
+function calcDateDiff(){
+  const a=getDate('d1'),b=getDate('d2');
+  if(!a||!b)return;
+  const e=a<b?a:b,l=a<b?b:a;
+  const {years,months,days,totalDays}=getDateDiff(e,l);
+  const s=L();
+  showResult('dateDiffResult',`
+    <div class="result-main">${fN(years)} ${s.yr}، ${fN(months)} ${s.mo}، ${fN(days)} ${s.dy}</div>
+    <div class="result-details">
+      <div class="result-item"><span class="val">${fN(years)}</span><span class="lbl">${s.YearsS}</span></div>
+      <div class="result-item"><span class="val">${fN(months)}</span><span class="lbl">${s.ExtraMonths}</span></div>
+      <div class="result-item"><span class="val">${fN(days)}</span><span class="lbl">${s.ExtraDays}</span></div>
+      <div class="result-item"><span class="val">${fN(totalDays)}</span><span class="lbl">${s.TotalDays}</span></div>
+      <div class="result-item"><span class="val">${fN(Math.floor(totalDays/7))}</span><span class="lbl">${s.Weeks}</span></div>
+    </div>`);
+}
+
+function calcDaysBetween(){
+  const a=getDate('dfrom'),b=getDate('dto');
+  if(!a||!b)return;
+  const totalDays=Math.round(Math.abs(b-a)/86400000);
+  const weeks=Math.floor(totalDays/7),rem=totalDays%7;
+  let wd=0,we=0;
+  const ss=new Date(a<b?a:b);
+  for(let i=0;i<totalDays;i++){const dw=ss.getDay();if(dw===5||dw===6)we++;else wd++;ss.setDate(ss.getDate()+1);}
+  const s=L();
+  showResult('daysBetweenResult',`
+    <div class="result-main">${fN(totalDays)} ${s.Days}</div>
+    <div class="result-details">
+      <div class="result-item"><span class="val">${fN(totalDays)}</span><span class="lbl">${s.TotalDays}</span></div>
+      <div class="result-item"><span class="val">${fN(weeks)}</span><span class="lbl">${s.FullWeeks}</span></div>
+      <div class="result-item"><span class="val">${fN(rem)}</span><span class="lbl">${s.Remaining}</span></div>
+      <div class="result-item"><span class="val">${fN(wd)}</span><span class="lbl">${s.Workdays}</span></div>
+      <div class="result-item"><span class="val">${fN(we)}</span><span class="lbl">${s.Weekends}</span></div>
+    </div>`);
+}
+
+function calcNextMonths(){
+  const from=getDate('nmFrom');
+  const count=parseInt(document.getElementById('nmCount').value)||6;
+  if(!from)return;
+  const s=L();
+  let rows='';
+  for(let i=1;i<=count;i++){const d=new Date(from);d.setMonth(d.getMonth()+i);rows+=`<div class="highlight-row"><span class="key">${s.After} ${fN(i)} ${s.MonthS}</span><span class="val">${formatDate(d)}</span></div>`;}
+  showResult('nextMonthsResult',`<div style="color:var(--muted);font-size:12px;margin-bottom:8px">${s.FromDate} ${formatDate(from)}</div>${rows}`);
+}
+
+function calcNextYears(){
+  const from=getDate('nyFrom');
+  const count=parseInt(document.getElementById('nyCount').value)||5;
+  if(!from)return;
+  const s=L();
+  let rows='';
+  for(let i=1;i<=count;i++){const d=new Date(from);d.setFullYear(d.getFullYear()+i);rows+=`<div class="highlight-row"><span class="key">${s.After} ${fN(i)} ${s.YearSS}</span><span class="val">${formatDate(d)}</span></div>`;}
+  showResult('nextYearsResult',`<div style="color:var(--muted);font-size:12px;margin-bottom:8px">${s.FromDate} ${formatDate(from)}</div>${rows}`);
+}
+
+function calcEOY(){
+  const from=getDate('eoyDate')||new Date();
+  const year=parseInt(document.getElementById('eoyYear').value);
+  const eoy=new Date(year,11,31);
+  const s=L();
+  if(eoy<from){showResult('eoyResult',`<div class="result-main">⚠️</div>`);return;}
+  const totalDays=Math.round((eoy-from)/86400000);
+  const elapsed=new Date(year,0,1);
+  const total365=Math.round((eoy-elapsed)/86400000)+1;
+  const passed=Math.round((from-elapsed)/86400000);
+  const pct=Math.max(0,Math.round((passed/total365)*100));
+  showResult('eoyResult',`
+    <div class="result-main">${fN(totalDays)} ${s.DaysLeft}</div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>${s.Elapsed} ${year}</span><span>${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="result-details" style="margin-top:12px">
+      <div class="result-item"><span class="val">${fN(totalDays)}</span><span class="lbl">${s.DaysLeft}</span></div>
+      <div class="result-item"><span class="val">${fN(Math.floor(totalDays/7))}</span><span class="lbl">${s.WeeksLeft}</span></div>
+      <div class="result-item"><span class="val">${fN(passed)}</span><span class="lbl">${s.DaysElapsed}</span></div>
+      <div class="result-item"><span class="val">${fN(total365)}</span><span class="lbl">${s.YearDays}</span></div>
+    </div>
+    <div class="highlight-row"><span class="key">${s.EndOf} ${year}</span><span class="val">${formatDate(eoy)}</span></div>`);
+}
+
+function calcWeekNum(){
+  const d=getDate('weekDate');
+  if(!d)return;
+  const jan1=new Date(d.getFullYear(),0,1);
+  const weekNum=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+  const dayOfYear=Math.floor((d-jan1)/86400000)+1;
+  const s=L();
+  showResult('weekNumResult',`
+    <div class="result-main">${s.WeekNum} ${fN(weekNum)}</div>
+    <div class="result-details">
+      <div class="result-item"><span class="val">${fN(weekNum)}</span><span class="lbl">${s.WeekNum}</span></div>
+      <div class="result-item"><span class="val">${fN(dayOfYear)}</span><span class="lbl">${s.DayOfYear}</span></div>
+      <div class="result-item"><span class="val">${fN(52-weekNum)}</span><span class="lbl">${s.WeeksLeftS}</span></div>
+    </div>
+    <div class="highlight-row"><span class="key">${s.DayL}</span><span class="val">${s.days[d.getDay()]}</span></div>`);
+}
+
+function calcDayOfWeek(){
+  const d=getDate('dowDate');
+  if(!d)return;
+  const di=d.getDay();
+  const isWE=di===5||di===6;
+  const icons=['☀️','🌙','🌟','💫','✨','🕌','🌴'];
+  const s=L();
+  showResult('dowResult',`
+    <div class="result-main">${icons[di]} ${s.days[di]}</div>
+    <div class="result-details">
+      <div class="result-item"><span class="val">${s.days[di]}</span><span class="lbl">${s.DayName}</span></div>
+      <div class="result-item"><span class="val">${fN(d.getDate())}</span><span class="lbl">${s.DayL}</span></div>
+      <div class="result-item"><span class="val">${s.months[d.getMonth()]}</span><span class="lbl">${s.MonthL}</span></div>
+      <div class="result-item"><span class="val">${fN(d.getFullYear())}</span><span class="lbl">${s.YearL}</span></div>
+    </div>
+    <div class="highlight-row"><span class="key">${s.DayType}</span><span class="val" style="color:${isWE?'var(--success)':'var(--accent2)'}">${isWE?s.Weekend:s.Workday}</span></div>`);
+}
+
+// HIJRI
+function gregToHijri(gy,gm,gd){
+  const jd=Math.floor((1461*(gy+4800+Math.floor((gm-14)/12)))/4)+Math.floor((367*(gm-2-12*Math.floor((gm-14)/12)))/12)-Math.floor((3*Math.floor((gy+4900+Math.floor((gm-14)/12))/100))/4)+gd-32075;
+  let l=jd-1948440+10632;
+  const n=Math.floor((l-1)/10631);l=l-10631*n+354;
+  const j=Math.floor((10985-l)/5316)*Math.floor((50*l)/17719)+Math.floor(l/5670)*Math.floor((43*l)/15238);
+  l=l-Math.floor((30-j)/15)*Math.floor((17719*j)/50)-Math.floor(j/16)*Math.floor((15238*j)/43)+29;
+  const hm=Math.floor((24*l)/709);
+  return {hy:30*n+j-30,hm,hd:l-Math.floor((709*hm)/24)};
+}
+function hijriToGreg(hy,hm,hd){
+  const jd=Math.floor((11*hy+3)/30)+354*hy+30*hm-Math.floor((hm-1)/2)+hd+1948440-385;
+  let l=jd+68569;
+  const n=Math.floor((4*l)/146097);l=l-Math.floor((146097*n+3)/4);
+  const i2=Math.floor((4000*(l+1))/1461001);l=l-Math.floor((1461*i2)/4)+31;
+  const j2=Math.floor((80*l)/2447);
+  const gd2=l-Math.floor((2447*j2)/80);l=Math.floor(j2/11);
+  return {gy:100*(n-49)+i2+l,gm:j2+2-12*l,gd:gd2};
+}
+
+function calcHijri(){
+  const s=L();
+  if(document.getElementById('hijriType').value==='gToH'){
+    const d=getDate('hijriGreg');if(!d)return;
+    const {hy,hm,hd}=gregToHijri(d.getFullYear(),d.getMonth()+1,d.getDate());
+    const hmN=s.hMonths[hm-1];
+    showResult('hijriResult',`
+      <div class="result-main">${fN(hd)} ${hmN} ${fN(hy)} ${s.AH}</div>
+      <div class="result-details">
+        <div class="result-item"><span class="val">${fN(hd)}</span><span class="lbl">${s.DayL}</span></div>
+        <div class="result-item"><span class="val">${hmN}</span><span class="lbl">${s.MonthL}</span></div>
+        <div class="result-item"><span class="val">${fN(hy)}</span><span class="lbl">${s.HijriYear}</span></div>
+      </div>
+      <div class="highlight-row"><span class="key">${s.Greg}</span><span class="val">${formatDate(d)}</span></div>
+      <div class="highlight-row"><span class="key">${s.Hijri}</span><span class="val">${hd}/${hm}/${hy} ${s.AH}</span></div>`);
+  } else {
+    const hy=parseInt(document.getElementById('hijriYear').value);
+    const hm=parseInt(document.getElementById('hijriMonth').value);
+    const hd=parseInt(document.getElementById('hijriDay').value);
+    if(!hy||!hd)return;
+    const {gy,gm,gd}=hijriToGreg(hy,hm,hd);
+    const greg=new Date(gy,gm-1,gd);
+    showResult('hijriResult',`
+      <div class="result-main">${formatDate(greg)}</div>
+      <div class="result-details">
+        <div class="result-item"><span class="val">${gd}</span><span class="lbl">${s.DayL}</span></div>
+        <div class="result-item"><span class="val">${s.months[gm-1]}</span><span class="lbl">${s.MonthL}</span></div>
+        <div class="result-item"><span class="val">${gy}</span><span class="lbl">${s.YearL}</span></div>
+      </div>
+      <div class="highlight-row"><span class="key">${s.Hijri}</span><span class="val">${hd} ${s.hMonths[hm-1]} ${hy} ${s.AH}</span></div>
+      <div class="highlight-row"><span class="key">${s.Greg}</span><span class="val">${formatDate(greg)}</span></div>`);
+  }
+}
+
+function calcRetirement(){
+  const birth=getDate('rBirth'),start=getDate('rStart');
+  if(!birth||!start)return;
+  const retireAge=parseInt(document.getElementById('retireAge').value)||60;
+  const minYears=parseInt(document.getElementById('retireMinYears').value)||25;
+  const today=new Date();
+  const rByAge=new Date(birth);rByAge.setFullYear(rByAge.getFullYear()+retireAge);
+  const rBySvc=new Date(start);rBySvc.setFullYear(rBySvc.getFullYear()+minYears);
+  const rDate=rByAge>rBySvc?rByAge:rBySvc;
+  const ca=getDateDiff(birth,today),sy=getDateDiff(start,today);
+  const rem=rDate>today?getDateDiff(today,rDate):null;
+  const s=L();
+  showResult('retireResult',`
+    <div class="result-main">${rem?`${s.RetireDate} ${formatDate(rDate)}`:s.EligibleNow}</div>
+    ${rem?`<div class="result-details">
+      <div class="result-item"><span class="val">${fN(rem.years)}</span><span class="lbl">${s.YrsLeft}</span></div>
+      <div class="result-item"><span class="val">${fN(rem.months)}</span><span class="lbl">${s.MosLeft}</span></div>
+      <div class="result-item"><span class="val">${fN(rem.days)}</span><span class="lbl">${s.DysLeft}</span></div>
+      <div class="result-item"><span class="val">${fN(rem.totalDays)}</span><span class="lbl">${s.TotalDays}</span></div>
+    </div>`:''}
+    <div class="highlight-row"><span class="key">${s.CurrAge}</span><span class="val">${ca.years} ${s.yr} ${ca.months} ${s.mo}</span></div>
+    <div class="highlight-row"><span class="key">${s.ServiceYrs}</span><span class="val">${sy.years} ${s.yr} ${sy.months} ${s.mo}</span></div>
+    <div class="highlight-row"><span class="key">${s.ByAge} ${retireAge}</span><span class="val">${formatDate(rByAge)}</span></div>
+    <div class="highlight-row"><span class="key">${s.AfterService} ${minYears} ${s.ServiceYrsS}</span><span class="val">${formatDate(rBySvc)}</span></div>
+    <div class="highlight-row"><span class="key">${s.ActualRetire}</span><span class="val" style="color:var(--success)">${formatDate(rDate)}</span></div>`);
+}
+</script>
+</body>
+</html>
